@@ -39,10 +39,8 @@ def convert_none_to_string(func):
     @wraps(func)
     def string_wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
-        if result:
-            return(result)
-        else:
-            return("")
+        return result or ""
+
     return(string_wrapper)
 
 
@@ -84,9 +82,7 @@ def id_for_chain(symbol):
     url = 'https://api.robinhood.com/instruments/'
 
     payload = {'symbol': symbol}
-    data = request_get(url, 'indexzero', payload)
-
-    if data:
+    if data := request_get(url, 'indexzero', payload):
         return(data['tradable_chain_id'])
     else:
         return(data)
@@ -139,7 +135,7 @@ def id_for_option(symbol, expirationDate, strike, optionType):
     data = request_get(url, 'pagination', payload)
 
     listOfOptions = [item for item in data if item["expiration_date"] == expirationDate]
-    if (len(listOfOptions) == 0):
+    if not listOfOptions:
         print('Getting the option ID failed. Perhaps the expiration date is wrong format, or the strike price is wrong.', file=get_output())
         return(None)
 
@@ -156,13 +152,11 @@ def round_price(price):
     """
     price = float(price)
     if price <= 1e-2:
-        returnPrice = round(price, 6)
+        return round(price, 6)
     elif price < 1e0:
-        returnPrice = round(price, 4)
+        return round(price, 4)
     else:
-        returnPrice = round(price, 2)
-
-    return returnPrice
+        return round(price, 2)
 
 
 def filter_data(data, info):
@@ -175,7 +169,7 @@ def filter_data(data, info):
     :returns:  A list or string with the values that correspond to the info keyword.
 
     """
-    if (data == None):
+    if data is None:
         return(data)
     elif (data == [None]):
         return([])
@@ -188,16 +182,15 @@ def filter_data(data, info):
         compareDict = data
         noneType = None
 
-    if info is not None:
-        if info in compareDict and type(data) == list:
-            return([x[info] for x in data])
-        elif info in compareDict and type(data) == dict:
-            return(data[info])
-        else:
-            print(error_argument_not_key_in_dictionary(info), file=get_output())
-            return(noneType)
-    else:
+    if info is None:
         return(data)
+    if info in compareDict and type(data) == list:
+        return([x[info] for x in data])
+    elif info in compareDict and type(data) == dict:
+        return(data[info])
+    else:
+        print(error_argument_not_key_in_dictionary(info), file=get_output())
+        return(noneType)
 
 
 def inputs_to_set(inputSymbols):
@@ -265,10 +258,7 @@ def request_get(url, dataType='regular', payload=None, jsonify_data=True):
     then either '[None]' or 'None' will be returned based on what the dataType parameter was set as.
 
     """
-    if (dataType == 'results' or dataType == 'pagination'):
-        data = [None]
-    else:
-        data = None
+    data = [None] if dataType in ['results', 'pagination'] else None
     res = None
     if jsonify_data:
         try:
@@ -288,7 +278,7 @@ def request_get(url, dataType='regular', payload=None, jsonify_data=True):
         except KeyError as message:
             print("{0} is not a key in the dictionary".format(message), file=get_output())
             return([None])
-    elif (dataType == 'pagination'):
+    elif dataType == 'pagination':
         counter = 2
         nextData = data
         try:
@@ -307,7 +297,7 @@ def request_get(url, dataType='regular', payload=None, jsonify_data=True):
             except:
                 print('Additional pages exist but could not be loaded.', file=get_output())
                 return(data)
-            print('Loading page '+str(counter)+' ...', file=get_output())
+            print(f'Loading page {str(counter)} ...', file=get_output())
             counter += 1
             for item in nextData['results']:
                 data.append(item)
@@ -353,10 +343,7 @@ def request_post(url, payload=None, timeout=16, json=False, jsonify_data=True):
     except Exception as message:
         print("Error in request_post: {0}".format(message), file=get_output())
     # Either return response <200,401,etc.> or the data that is returned from requests.
-    if jsonify_data:
-        return(data)
-    else:
-        return(res)
+    return data if jsonify_data else res
 
 
 def request_delete(url):

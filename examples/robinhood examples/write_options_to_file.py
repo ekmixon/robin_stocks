@@ -33,37 +33,33 @@ writeType = "w" #or enter "a" to have it continuously append every time script i
 os.chdir(os.path.dirname(__file__))
 path = os.getcwd()
 filename = os.path.join(path,fileName)
-fileStream = open(filename, mode=writeType)
-
-while t.time() < endTime:
-    time = str(datetime.datetime.now())
-    #Both write and print the data so that you can view it as it runs.
-    fileStream.write("\n")
-    fileStream.write(time)
-    print(time)
-    #Get the data
-    instrument_data = r.get_option_instrument_data(stock,date,strike,optionType)
-    market_data = r.get_option_market_data(stock,date,strike,optionType)
-
-    fileStream.write("\n")
-    fileStream.write("{} Instrument Data {}".format("="*30,"="*30))
-    print("{} Instrument Data {}".format("="*30,"="*30))
-    # instrument_data is a dictionary, and the key/value pairs can be accessed with .items()
-    for key, value in instrument_data.items():
+with open(filename, mode=writeType) as fileStream:
+    while t.time() < endTime:
+        time = str(datetime.datetime.now())
+        #Both write and print the data so that you can view it as it runs.
         fileStream.write("\n")
-        fileStream.write("key: {:<25} value: {}".format(key,value))
-        print("key: {:<25} value: {}".format(key,value))
+        fileStream.write(time)
+        print(time)
+        #Get the data
+        instrument_data = r.get_option_instrument_data(stock,date,strike,optionType)
+        market_data = r.get_option_market_data(stock,date,strike,optionType)
 
-    fileStream.write("\n")
-    fileStream.write("{} Market Data {}".format("="*30,"="*30))
-    print("{} Market Data {}".format("="*30,"="*30))
-
-    for key, value in market_data[0].items():
         fileStream.write("\n")
-        fileStream.write("key: {:<25} value: {}".format(key,value))
-        print("key: {:<25} value: {}".format(key,value))
+        fileStream.write(f'{"=" * 30} Instrument Data {"=" * 30}')
+        print(f'{"=" * 30} Instrument Data {"=" * 30}')
+        # instrument_data is a dictionary, and the key/value pairs can be accessed with .items()
+        for key, value in instrument_data.items():
+            fileStream.write("\n")
+            fileStream.write("key: {:<25} value: {}".format(key,value))
+            print("key: {:<25} value: {}".format(key,value))
 
-    t.sleep(PrintInterval)
+        fileStream.write("\n")
+        fileStream.write(f'{"=" * 30} Market Data {"=" * 30}')
+        print(f'{"=" * 30} Market Data {"=" * 30}')
 
-# make sure to close the file stream when you are done with it.
-fileStream.close()
+        for key, value in market_data[0].items():
+            fileStream.write("\n")
+            fileStream.write("key: {:<25} value: {}".format(key,value))
+            print("key: {:<25} value: {}".format(key,value))
+
+        t.sleep(PrintInterval)

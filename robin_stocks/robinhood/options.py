@@ -6,8 +6,7 @@ from robin_stocks.robinhood.urls import *
 def spinning_cursor():
     """ This is a generator function to yield a character. """
     while True:
-        for cursor in '|/-\\':
-            yield cursor
+        yield from '|/-\\'
 
 spinner = spinning_cursor()
 
@@ -131,7 +130,7 @@ def find_tradable_options(symbol, expirationDate=None, strikePrice=None, optionT
 
     url = option_instruments_url()
     if not id_for_chain(symbol):
-        print("Symbol {} is not valid for finding options.".format(symbol), file=get_output())
+        print(f"Symbol {symbol} is not valid for finding options.", file=get_output())
         return [None]
 
     payload = {'chain_id': id_for_chain(symbol),
@@ -178,8 +177,7 @@ def find_options_by_expiration(inputSymbols, expirationDate, optionType=None, in
         filteredOptions = [item for item in allOptions if item.get("expiration_date") == expirationDate]
 
         for item in filteredOptions:
-            marketData = get_option_market_data_by_id(item['id'])
-            if marketData:
+            if marketData := get_option_market_data_by_id(item['id']):
                 item.update(marketData[0])
             write_spinner()
 
@@ -216,8 +214,7 @@ def find_options_by_strike(inputSymbols, strikePrice, optionType=None, info=None
         filteredOptions = find_tradable_options(symbol, None, strikePrice, optionType, None)
 
         for item in filteredOptions:
-            marketData = get_option_market_data_by_id(item['id'])
-            if marketData:
+            if marketData := get_option_market_data_by_id(item['id']):
                 item.update(marketData[0])
             write_spinner()
 
@@ -257,8 +254,7 @@ def find_options_by_expiration_and_strike(inputSymbols, expirationDate, strikePr
         filteredOptions = [item for item in allOptions if item.get("expiration_date") == expirationDate]
 
         for item in filteredOptions:
-            marketData = get_option_market_data_by_id(item['id'])
-            if marketData:
+            if marketData := get_option_market_data_by_id(item['id']):
                 item.update(marketData[0])
             write_spinner()
 
@@ -293,7 +289,7 @@ def find_options_by_specific_profitability(inputSymbols, expirationDate=None, st
     symbols = inputs_to_set(inputSymbols)
     data = []
 
-    if (typeProfit != "chance_of_profit_short" and typeProfit != "chance_of_profit_long"):
+    if typeProfit not in ["chance_of_profit_short", "chance_of_profit_long"]:
         print("Invalid string for 'typeProfit'. Defaulting to 'chance_of_profit_short'.", file=get_output())
         typeProfit = "chance_of_profit_short"
 
@@ -304,7 +300,7 @@ def find_options_by_specific_profitability(inputSymbols, expirationDate=None, st
                 continue
 
             market_data = get_option_market_data_by_id(option['id'])
-            
+
             if len(market_data):
                 option.update(market_data[0])
                 write_spinner()
@@ -507,7 +503,7 @@ def get_option_historicals(symbol, expirationDate, strikePrice, optionType, inte
                'interval': interval,
                'bounds': bounds}
     data = request_get(url, 'regular', payload)
-    if (data == None or data == [None]):
+    if data is None or data == [None]:
         return data
 
     histData = []

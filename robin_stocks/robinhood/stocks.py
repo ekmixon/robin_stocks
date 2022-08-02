@@ -33,7 +33,7 @@ def get_quotes(inputSymbols, info=None):
     payload = {'symbols': ','.join(symbols)}
     data = request_get(url, 'results', payload)
 
-    if (data == None or data == [None]):
+    if data is None or data == [None]:
         return data
 
     for count, item in enumerate(data):
@@ -86,7 +86,7 @@ def get_fundamentals(inputSymbols, info=None):
     payload = {'symbols': ','.join(symbols)}
     data = request_get(url, 'results', payload)
 
-    if (data == None or data == [None]):
+    if data is None or data == [None]:
         return data
 
     for count, item in enumerate(data):
@@ -141,9 +141,7 @@ def get_instruments_by_symbols(inputSymbols, info=None):
     data = []
     for item in symbols:
         payload = {'symbol': item}
-        itemData = request_get(url, 'indexzero', payload)
-
-        if itemData:
+        if itemData := request_get(url, 'indexzero', payload):
             data.append(itemData)
         else:
             print(error_ticker_does_not_exist(item), file=get_output())
@@ -318,10 +316,9 @@ def get_ratings(symbol, info=None):
 
     if (len(data['ratings']) == 0):
         return(data)
-    else:
-        for item in data['ratings']:
-            oldText = item['text']
-            item['text'] = oldText.encode('UTF-8')
+    for item in data['ratings']:
+        oldText = item['text']
+        item['text'] = oldText.encode('UTF-8')
 
     return(filter_data(data, info))
     
@@ -509,7 +506,7 @@ def find_instrument_data(query):
         print('No results found for that keyword', file=get_output())
         return([None])
     else:
-        print('Found ' + str(len(data)) + ' results', file=get_output())
+        print(f'Found {len(data)} results', file=get_output())
         return(data)
 
 
@@ -538,7 +535,7 @@ def get_stock_historicals(inputSymbols, interval='hour', span='week', bounds='re
                       * interpolated
                       * symbol
 
-    """    
+    """
     interval_check = ['5minute', '10minute', 'hour', 'day', 'week']
     span_check = ['day', 'week', 'month', '3month', 'year', '5year']
     bounds_check = ['extended', 'regular', 'trading']
@@ -553,7 +550,7 @@ def get_stock_historicals(inputSymbols, interval='hour', span='week', bounds='re
     if bounds not in bounds_check:
         print('ERROR: Bounds must be "extended","regular",or "trading"', file=get_output())
         return([None])
-    if (bounds == 'extended' or bounds == 'trading') and span != 'day':
+    if bounds in ['extended', 'trading'] and span != 'day':
         print('ERROR: extended and trading bounds can only be used with a span of "day"', file=get_output())
         return([None])
 
@@ -565,7 +562,7 @@ def get_stock_historicals(inputSymbols, interval='hour', span='week', bounds='re
                'bounds': bounds}
 
     data = request_get(url, 'results', payload)
-    if (data == None or data == [None]):
+    if data is None or data == [None]:
         return data
 
     histData = []

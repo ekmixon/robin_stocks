@@ -101,10 +101,7 @@ def get_crypto_info(symbol, info=None):
     url = crypto_currency_pairs_url()
     data = request_get(url, 'results')
     data = [x for x in data if x['asset_currency']['code'] == symbol]
-    if len(data) > 0:
-        data = data[0]
-    else:
-        data = None
+    data = data[0] if data else None
     return(filter_data(data, info))
 
 
@@ -203,7 +200,7 @@ def get_crypto_historicals(symbol, interval='hour', span='week', bounds='24_7', 
     if bounds not in bounds_check:
         print('ERROR: Bounds must be "24_7","extended","regular",or "trading"', file=get_output())
         return([None])
-    if (bounds == 'extended' or bounds == 'trading') and span != 'day':
+    if bounds in ['extended', 'trading'] and span != 'day':
         print('ERROR: extended and trading bounds can only be used with a span of "day"', file=get_output())
         return([None])
 

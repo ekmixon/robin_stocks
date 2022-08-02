@@ -116,8 +116,7 @@ def get_stock_order_info(orderID):
 
     """
     url = orders_url(orderID)
-    data = request_get(url)
-    return(data)
+    return request_get(url)
 
 
 @login_required
@@ -130,8 +129,7 @@ def get_option_order_info(order_id):
 
     """
     url = option_orders_url(order_id)
-    data = request_get(url)
-    return data
+    return request_get(url)
 
 
 @login_required
@@ -144,8 +142,7 @@ def get_crypto_order_info(order_id):
 
     """
     url = crypto_orders_url(order_id)
-    data = request_get(url)
-    return data
+    return request_get(url)
 
 
 @login_required
@@ -160,18 +157,18 @@ def find_stock_orders(**arguments):
     url = orders_url()
     data = request_get(url, 'pagination')
 
-    if (len(arguments) == 0):
+    if not arguments:
         return(data)
 
     for item in data:
         item['quantity'] = str(int(float(item['quantity'])))
 
-    if 'symbol' in arguments.keys():
+    if 'symbol' in arguments:
         arguments['instrument'] = get_instruments_by_symbols(
             arguments['symbol'], info='url')[0]
         del arguments['symbol']
 
-    if 'quantity' in arguments.keys():
+    if 'quantity' in arguments:
         arguments['quantity'] = str(arguments['quantity'])
 
     stop = len(arguments.keys())-1
@@ -202,7 +199,7 @@ def cancel_stock_order(orderID):
     data = request_post(url)
 
     if data:
-        print('Order '+str(orderID)+' cancelled', file=get_output())
+        print(f'Order {str(orderID)} cancelled', file=get_output())
     return(data)
 
 
@@ -219,7 +216,7 @@ def cancel_option_order(orderID):
     data = request_post(url)
 
     if data:
-        print('Order '+str(orderID)+' cancelled', file=get_output())
+        print(f'Order {str(orderID)} cancelled', file=get_output())
     return(data)
 
 
@@ -236,7 +233,7 @@ def cancel_crypto_order(orderID):
     data = request_post(url)
 
     if data:
-        print('Order '+str(orderID)+' cancelled', file=get_output())
+        print(f'Order {str(orderID)} cancelled', file=get_output())
     return(data)
 
 
@@ -712,7 +709,7 @@ def order_trailing_stop(symbol, quantity, side, trailAmount, trailType='percenta
             margin = stock_price * trailAmount * 0.01
             percentage = trailAmount
     except Exception as e:
-        print('ERROR: {}'.format(e))
+        print(f'ERROR: {e}')
         return None
 
     stopPrice = stock_price + margin if side == "buy" else stock_price - margin
@@ -742,9 +739,7 @@ def order_trailing_stop(symbol, quantity, side, trailAmount, trailType='percenta
         payload['trailing_peg'] = {'type': 'percentage', 'percentage': str(percentage)}
 
     url = orders_url()
-    data = request_post(url, payload, json=True, jsonify_data=jsonify)
-
-    return (data)
+    return request_post(url, payload, json=True, jsonify_data=jsonify)
 
 
 @login_required
@@ -782,11 +777,6 @@ def order(symbol, quantity, side, limitPrice=None, stopPrice=None, timeInForce='
     orderType = "market"
     trigger = "immediate"
 
-    if side == "buy":
-        priceType = "ask_price"
-    else:
-        priceType = "bid_price"
-
     if limitPrice and stopPrice:
         price = round_price(limitPrice)
         stopPrice = round_price(stopPrice)
@@ -797,12 +787,10 @@ def order(symbol, quantity, side, limitPrice=None, stopPrice=None, timeInForce='
         orderType = "limit"
     elif stopPrice:
         stopPrice = round_price(stopPrice)
-        if side == "buy":
-            price = stopPrice
-        else:
-            price = None
+        price = stopPrice if side == "buy" else None
         trigger = "stop"
     else:
+        priceType = "ask_price" if side == "buy" else "bid_price"
         price = round_price(next(iter(get_latest_price(symbol, priceType, extendedHours)), 0.00))
 
     payload = {
@@ -821,9 +809,7 @@ def order(symbol, quantity, side, limitPrice=None, stopPrice=None, timeInForce='
     }
 
     url = orders_url()
-    data = request_post(url, payload, jsonify_data=jsonify)
-
-    return(data)
+    return request_post(url, payload, jsonify_data=jsonify)
 
 
 @login_required
@@ -946,9 +932,7 @@ def order_option_spread(direction, price, symbol, quantity, spread, timeInForce=
     }
 
     url = option_orders_url()
-    data = request_post(url, payload, json=True, jsonify_data=jsonify)
-
-    return(data)
+    return request_post(url, payload, json=True, jsonify_data=jsonify)
 
 
 @login_required
@@ -1007,9 +991,7 @@ def order_buy_option_limit(positionEffect, creditOrDebit, price, symbol, quantit
     }
 
     url = option_orders_url()
-    data = request_post(url, payload, json=True, jsonify_data=jsonify)
-
-    return(data)
+    return request_post(url, payload, json=True, jsonify_data=jsonify)
 
 
 @login_required
@@ -1071,9 +1053,7 @@ def order_buy_option_stop_limit(positionEffect, creditOrDebit, limitPrice, stopP
     }
 
     url = option_orders_url()
-    data = request_post(url, payload, json=True, jsonify_data=jsonify)
-
-    return(data)
+    return request_post(url, payload, json=True, jsonify_data=jsonify)
 
 
 def order_sell_option_stop_limit(positionEffect, creditOrDebit, limitPrice, stopPrice, symbol, quantity, expirationDate, strike, optionType='both', timeInForce='gtc', jsonify=True):
@@ -1134,9 +1114,7 @@ def order_sell_option_stop_limit(positionEffect, creditOrDebit, limitPrice, stop
     }
 
     url = option_orders_url()
-    data = request_post(url, payload, json=True, jsonify_data=jsonify)
-
-    return(data)
+    return request_post(url, payload, json=True, jsonify_data=jsonify)
 
 
 @login_required
@@ -1195,9 +1173,7 @@ def order_sell_option_limit(positionEffect, creditOrDebit, price, symbol, quanti
     }
 
     url = option_orders_url()
-    data = request_post(url, payload, json=True, jsonify_data=jsonify)
-
-    return(data)
+    return request_post(url, payload, json=True, jsonify_data=jsonify)
 
 
 @login_required
@@ -1412,15 +1388,11 @@ def order_crypto(symbol, side, quantityOrPrice, amountIn="quantity", limitPrice=
 
     orderType = "market"
 
-    if side == "buy":
-        priceType = "ask_price"
-    else:
-        priceType = "bid_price"
-
     if limitPrice:
         price = limitPrice
         orderType = "limit"
     else:
+        priceType = "ask_price" if side == "buy" else "bid_price"
         price = round_price(get_crypto_quote_from_id(crypto_info['id'], info=priceType))
 
     if amountIn == "quantity":
@@ -1440,6 +1412,4 @@ def order_crypto(symbol, side, quantityOrPrice, amountIn="quantity", limitPrice=
     }
 
     url = order_crypto_url()
-    data = request_post(url, payload, json=True, jsonify_data=jsonify)
-
-    return(data)
+    return request_post(url, payload, json=True, jsonify_data=jsonify)

@@ -25,7 +25,7 @@ def get_top_movers_sp500(direction, info=None):
         print(message, file=get_output())
         return None
 
-    if (direction != 'up' and direction != 'down'):
+    if direction not in ['up', 'down']:
         print('Error: direction must be "up" or "down"', file=get_output())
         return([None])
 
@@ -132,7 +132,7 @@ def get_all_stocks_from_market_tag(tag, info=None):
     data = filter_data(data, 'instruments')
 
     if not data:
-        print('ERROR: "{}" is not a valid tag'.format(tag), file=get_output())
+        print(f'ERROR: "{tag}" is not a valid tag', file=get_output())
         return [None]
 
     symbols = [get_symbol_by_url(x) for x in data]

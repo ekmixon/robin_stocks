@@ -14,20 +14,17 @@ def generate_device_token():
 
     """
     rands = []
-    for i in range(0, 16):
+    for i in range(16):
         r = random.random()
         rand = 4294967296.0 * r
         rands.append((int(rand) >> ((3 & i) << 3)) & 255)
 
-    hexa = []
-    for i in range(0, 256):
-        hexa.append(str(hex(i+256)).lstrip("0x").rstrip("L")[1:])
-
+    hexa = [hex(i+256).lstrip("0x").rstrip("L")[1:] for i in range(256)]
     id = ""
-    for i in range(0, 16):
+    for i in range(16):
         id += hexa[rands[i]]
 
-        if (i == 3) or (i == 5) or (i == 7) or (i == 9):
+        if i in [3, 5, 7, 9]:
             id += "-"
 
     return(id)
@@ -85,11 +82,7 @@ def login(username=None, password=None, expiresIn=86400, scope='internal', by_sm
     creds_file = "robinhood.pickle"
     pickle_path = os.path.join(data_dir, creds_file)
     # Challenge type is used if not logging in with two-factor authentication.
-    if by_sms:
-        challenge_type = "sms"
-    else:
-        challenge_type = "email"
-
+    challenge_type = "sms" if by_sms else "email"
     url = login_url()
     payload = {
         'client_id': 'c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS',
@@ -149,45 +142,41 @@ def login(username=None, password=None, expiresIn=86400, scope='internal', by_sm
         payload['password'] = password
 
     data = request_post(url, payload)
-    # Handle case where mfa or challenge is required.
-    if data:
-        if 'mfa_required' in data:
-            mfa_token = input("Please type in the MFA code: ")
+    if not data:
+        raise Exception('Error: Trouble connecting to robinhood API. Check internet connection.')
+    if 'mfa_required' in data:
+        mfa_token = input("Please type in the MFA code: ")
+        payload['mfa_code'] = mfa_token
+        res = request_post(url, payload, jsonify_data=False)
+        while (res.status_code != 200):
+            mfa_token = input(
+                "That MFA code was not correct. Please type in another MFA code: ")
             payload['mfa_code'] = mfa_token
             res = request_post(url, payload, jsonify_data=False)
-            while (res.status_code != 200):
-                mfa_token = input(
-                    "That MFA code was not correct. Please type in another MFA code: ")
-                payload['mfa_code'] = mfa_token
-                res = request_post(url, payload, jsonify_data=False)
-            data = res.json()
-        elif 'challenge' in data:
-            challenge_id = data['challenge']['id']
-            sms_code = input('Enter Robinhood code for validation: ')
+        data = res.json()
+    elif 'challenge' in data:
+        challenge_id = data['challenge']['id']
+        sms_code = input('Enter Robinhood code for validation: ')
+        res = respond_to_challenge(challenge_id, sms_code)
+        while 'challenge' in res and res['challenge']['remaining_attempts'] > 0:
+            sms_code = input('That code was not correct. {0} tries remaining. Please type in another code: '.format(
+                res['challenge']['remaining_attempts']))
             res = respond_to_challenge(challenge_id, sms_code)
-            while 'challenge' in res and res['challenge']['remaining_attempts'] > 0:
-                sms_code = input('That code was not correct. {0} tries remaining. Please type in another code: '.format(
-                    res['challenge']['remaining_attempts']))
-                res = respond_to_challenge(challenge_id, sms_code)
-            update_session(
-                'X-ROBINHOOD-CHALLENGE-RESPONSE-ID', challenge_id)
-            data = request_post(url, payload)
-        # Update Session data with authorization or raise exception with the information present in data.
-        if 'access_token' in data:
-            token = '{0} {1}'.format(data['token_type'], data['access_token'])
-            update_session('Authorization', token)
-            set_login_state(True)
-            data['detail'] = "logged in with brand new authentication code."
-            if store_session:
-                with open(pickle_path, 'wb') as f:
-                    pickle.dump({'token_type': data['token_type'],
-                                 'access_token': data['access_token'],
-                                 'refresh_token': data['refresh_token'],
-                                 'device_token': device_token}, f)
-        else:
-            raise Exception(data['detail'])
-    else:
-        raise Exception('Error: Trouble connecting to robinhood API. Check internet connection.')
+        update_session(
+            'X-ROBINHOOD-CHALLENGE-RESPONSE-ID', challenge_id)
+        data = request_post(url, payload)
+    if 'access_token' not in data:
+        raise Exception(data['detail'])
+    token = '{0} {1}'.format(data['token_type'], data['access_token'])
+    update_session('Authorization', token)
+    set_login_state(True)
+    data['detail'] = "logged in with brand new authentication code."
+    if store_session:
+        with open(pickle_path, 'wb') as f:
+            pickle.dump({'token_type': data['token_type'],
+                         'access_token': data['access_token'],
+                         'refresh_token': data['refresh_token'],
+                         'device_token': device_token}, f)
     return(data)
 
 

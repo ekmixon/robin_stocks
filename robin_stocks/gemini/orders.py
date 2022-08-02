@@ -336,10 +336,7 @@ def order(ticker, quantity, side, price=None, stop_limit_price=None, min_amount=
         "side": side
     }
     #
-    if price:
-        payload["price"] = price
-    else:
-        payload["price"] = get_price(ticker, side)
+    payload["price"] = price or get_price(ticker, side)
     #
     if stop_limit_price:
         payload["type"] = "exchange stop limit"

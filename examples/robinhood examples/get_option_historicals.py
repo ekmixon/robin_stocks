@@ -49,7 +49,7 @@ x = [dt.datetime.strptime(d,'%Y-%m-%dT%H:%M:%SZ') for d in dates]
 # plot the data.
 plt.plot(x, closingPrices, 'ro')
 plt.plot(x, openPrices, 'bo')
-plt.title("Option price for {} over time".format(symbol_name))
+plt.title(f"Option price for {symbol_name} over time")
 plt.xlabel("Dates")
 plt.ylabel("Price")
 plt.show()

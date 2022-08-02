@@ -191,7 +191,4 @@ def get_price(ticker, side):
 
     """
     data, _ = get_pubticker(ticker, jsonify=True)
-    if side == "buy":
-        return data["ask"]
-    else:
-        return data["bid"]
+    return data["ask"] if side == "buy" else data["bid"]

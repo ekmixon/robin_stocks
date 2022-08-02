@@ -110,7 +110,7 @@ def documents_url():
     return('https://api.robinhood.com/documents/')
 
 def withdrawl_url(bank_id):
-    return("https://api.robinhood.com/ach/relationships/{}/".format(bank_id))
+    return f"https://api.robinhood.com/ach/relationships/{bank_id}/"
 
 def linked_url(id=None, unlink=False):
     if unlink:
@@ -169,7 +169,7 @@ def markets_url():
     return('https://api.robinhood.com/markets/')
 
 def market_hours_url(market, date):
-    return('https://api.robinhood.com/markets/{}/hours/{}/'.format(market, date))
+    return f'https://api.robinhood.com/markets/{market}/hours/{date}/'
 
 def movers_sp500_url():
     return('https://api.robinhood.com/midlands/movers/sp500/')
@@ -181,7 +181,7 @@ def movers_top_url():
     return('https://api.robinhood.com/midlands/tags/tag/top-movers/')
 
 def market_category_url(category):
-    return('https://api.robinhood.com/midlands/tags/tag/{}/'.format(category))
+    return f'https://api.robinhood.com/midlands/tags/tag/{category}/'
 
 # options
 

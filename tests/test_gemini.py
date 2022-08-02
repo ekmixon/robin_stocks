@@ -24,7 +24,7 @@ class TestAuthentication:
                 os.environ['gemini_account_secret'])
         response, err = g.heartbeat()
         data = response.json()
-        assert err == None
+        assert err is None
         assert response.status_code == 200
         assert data["result"] == "ok"
 
@@ -36,7 +36,7 @@ class TestCrypto:
     def test_pubticker_btc(self):
         response, err = g.get_pubticker(self.ticker)
         data = response.json()
-        assert err == None
+        assert err is None
         assert response.status_code == 200
         assert "bid" in data
         assert "ask" in data
@@ -46,7 +46,7 @@ class TestCrypto:
     def test_get_symbols(self):
         response, err = g.get_symbols()
         data = response.json()
-        assert err == None
+        assert err is None
         assert response.status_code == 200
         assert len(data) > 1
         assert self.ticker in data
@@ -68,7 +68,7 @@ class TestOrders:
 
     def test_mytrades(self):
         response, err = g.get_trades_for_crypto("btcusd")
-        assert err == None
+        assert err is None
         assert response.status_code == 200
 
 
@@ -81,5 +81,5 @@ class TestAccount:
 
     def test_account_detail(self):
         response, err = g.get_account_detail()
-        assert err == None
+        assert err is None
         assert response.status_code == 200

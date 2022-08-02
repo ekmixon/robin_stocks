@@ -68,7 +68,7 @@ def get_historical_portfolio(interval=None, span='week', bounds='regular',info=N
     if bounds not in bounds_check:
         print('ERROR: Bounds must be "extended","regular",or "trading"')
         return([None])
-    if (bounds == 'extended' or bounds == 'trading') and span != 'day':
+    if bounds in ['extended', 'trading'] and span != 'day':
         print('ERROR: extended and trading bounds can only be used with a span of "day"', file=get_output())
         return([None])
 
@@ -191,10 +191,10 @@ def get_total_dividends():
     url = dividends_url()
     data = request_get(url, 'pagination')
 
-    dividend_total = 0
-    for item in data:
-        dividend_total += float(item['amount']) if (item['state'] == 'paid' or item['state'] == 'reinvested') else 0
-    return(dividend_total)
+    return sum(
+        float(item['amount']) if item['state'] in ['paid', 'reinvested'] else 0
+        for item in data
+    )
 
 
 @login_required
@@ -216,7 +216,7 @@ def get_dividends_by_instrument(instrument, dividend_data):
 
         dividend = float(data[0]['rate'])
         total_dividends = float(data[0]['amount'])
-        total_amount_paid = float(sum([float(d['amount']) for d in data]))
+        total_amount_paid = float(sum(float(d['amount']) for d in data))
 
         return {
             'dividend_rate': "{0:.2f}".format(dividend),
@@ -251,8 +251,7 @@ def get_latest_notification():
 
     """
     url = notifications_url(True)
-    data = request_get(url)
-    return(data)
+    return request_get(url)
 
 
 @login_required
@@ -280,18 +279,16 @@ def get_margin_calls(symbol=None):
 
     """
     url = margin_url()
-    if symbol:
-        try:
-            symbol = symbol.upper().strip()
-        except AttributeError as message:
-            print(message, file=get_output())
-            return None
-        payload = {'equity_instrument_id', id_for_stock(symbol)}
-        data = request_get(url, 'results', payload)
-    else:
-        data = request_get(url, 'results')
+    if not symbol:
+        return request_get(url, 'results')
 
-    return(data)
+    try:
+        symbol = symbol.upper().strip()
+    except AttributeError as message:
+        print(message, file=get_output())
+        return None
+    payload = {'equity_instrument_id', id_for_stock(symbol)}
+    return request_get(url, 'results', payload)
 
 
 @login_required
@@ -382,8 +379,7 @@ def unlink_bank_account(id):
 
     """
     url = linked_url(id, True)
-    data = request_post(url)
-    return(data)
+    return request_post(url)
 
 
 @login_required
@@ -416,10 +412,7 @@ def get_card_transactions(cardType=None, info=None):
     a list of strings is returned where the strings are the value of the key that matches info.
 
     """
-    payload = None
-    if type:
-        payload = { 'type': type }
-
+    payload = { 'type': type } if type else None
     url = cardtransactions_url()
     data = request_get(url, 'pagination', payload)
     return(filter_data(data, info))
@@ -536,16 +529,12 @@ def download_document(url, name=None, dirpath=None):
     if not name:
         name = url[36:].split('/', 1)[0]
 
-    if dirpath:
-        directory = dirpath
-    else:
-        directory = 'robin_documents/'
-
+    directory = dirpath or 'robin_documents/'
     filename = directory + name + ' .pdf'
     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     open(filename, 'wb').write(data.content)
-    print('Done - Wrote file {}.pdf to {}'.format(name, os.path.abspath(filename)))
+    print(f'Done - Wrote file {name}.pdf to {os.path.abspath(filename)}')
 
     return(data)
 
@@ -566,46 +555,37 @@ def download_all_documents(doctype=None, dirpath=None):
     documents = get_documents()
 
     downloaded_files = False
-    if dirpath:
-        directory = dirpath
-    else:
-        directory = 'robin_documents/'
-
+    directory = dirpath or 'robin_documents/'
     counter = 0
     for item in documents:
-        if doctype == None:
-            data = request_document(item['download_url'])
-            if data:
-                name = item['created_at'][0:10] + '-' + \
-                    item['type'] + '-' + item['id']
-                filename = directory + name + '.pdf'
-                os.makedirs(os.path.dirname(filename), exist_ok=True)
-                open(filename, 'wb').write(data.content)
-                downloaded_files = True
-                counter += 1
-                print('Writing PDF {}...'.format(counter), file=get_output())
-        else:
-            if item['type'] == doctype:
-                data = request_document(item['download_url'])
-                if data:
-                    name = item['created_at'][0:10] + '-' + \
-                        item['type'] + '-' + item['id']
-                    filename = directory + name + '.pdf'
-                    os.makedirs(os.path.dirname(filename), exist_ok=True)
-                    open(filename, 'wb').write(data.content)
-                    downloaded_files = True
-                    counter += 1
-                    print('Writing PDF {}...'.format(counter), file=get_output())
-
+        if (
+            doctype is None
+            and (data := request_document(item['download_url']))
+            or doctype != None
+            and item['type'] == doctype
+            and (data := request_document(item['download_url']))
+        ):
+            name = (((item['created_at'][:10] + '-' + item['type']) + '-') + item['id'])
+            filename = directory + name + '.pdf'
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            open(filename, 'wb').write(data.content)
+            downloaded_files = True
+            counter += 1
+            print(f'Writing PDF {counter}...', file=get_output())
     if downloaded_files == False:
         print('WARNING: Could not find files of that doctype to download', file=get_output())
+    elif counter == 1:
+        print(
+            f'Done - wrote {counter} file to {os.path.abspath(directory)}',
+            file=get_output(),
+        )
+
     else:
-        if counter == 1:
-            print('Done - wrote {} file to {}'.format(counter,
-                                                      os.path.abspath(directory)), file=get_output())
-        else:
-            print('Done - wrote {} files to {}'.format(counter,
-                                                       os.path.abspath(directory)), file=get_output())
+        print(
+            f'Done - wrote {counter} files to {os.path.abspath(directory)}',
+            file=get_output(),
+        )
+
 
     return(documents)
 

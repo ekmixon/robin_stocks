@@ -18,12 +18,8 @@ def get_accounts(options=None, jsonify=None):
         None if there was not an error.
     """
     url = URLS.accounts()
-    if options:
-        payload = {
-            "fields": options
-        }
-    else:
-        payload = None
+    payload = {"fields": options} if options else None
+
     data, error = request_get(url, payload, jsonify)
     return data, error
 
@@ -46,12 +42,8 @@ def get_account(id, options=None, jsonify=None):
         None if there was not an error.
     """
     url = URLS.account(id)
-    if options:
-        payload = {
-            "fields": options
-        }
-    else:
-        payload = None
+    payload = {"fields": options} if options else None
+
     data, error = request_get(url, payload, jsonify)
     return data, error
 

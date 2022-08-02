@@ -33,10 +33,12 @@ def create_absolute_csv(dir_path, file_name, order_type):
     """
     path = Path(dir_path)
     directory = path.resolve()
-    if not file_name:
-        file_name = "{}_orders_{}.csv".format(order_type, date.today().strftime('%b-%d-%Y'))
-    else:
-        file_name = fix_file_extension(file_name)
+    file_name = (
+        fix_file_extension(file_name)
+        if file_name
+        else f"{order_type}_orders_{date.today().strftime('%b-%d-%Y')}.csv"
+    )
+
     return(Path.joinpath(directory, file_name))
 
 

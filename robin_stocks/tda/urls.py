@@ -8,8 +8,8 @@ from robin_stocks.gemini.helper import get_sandbox_flag
 class AutoName(Enum):
     """Automatically sets an enum value to be its name when using auto()"""
 
-    def _generate_next_value_(name, start, count, last_values):
-        return name
+    def _generate_next_value_(self, start, count, last_values):
+        return self
 
 
 class Version(AutoName):
@@ -28,7 +28,7 @@ class URLS:
 
     @classmethod
     def get_base_url(cls, version):
-        return cls.__base_url + "/" + version.value + "/"
+        return f"{cls.__base_url}/{version.value}/"
 
     @classmethod
     def get_endpoint(cls, url):
@@ -46,7 +46,7 @@ class URLS:
 
     @classmethod
     def accounts(cls):
-        return cls.get_base_url(Version.v1) + "accounts"
+        return f"{cls.get_base_url(Version.v1)}accounts"
 
     @classmethod
     def transaction(cls, id, transaction):
@@ -59,12 +59,12 @@ class URLS:
     # authentication.py
     @classmethod
     def oauth(cls):
-        return cls.get_base_url(Version.v1) + "oauth2/token"
+        return f"{cls.get_base_url(Version.v1)}oauth2/token"
 
     # markets.py
     @classmethod
     def markets(cls):
-        return cls.get_base_url(Version.v1) + "marketdata/hours"
+        return f"{cls.get_base_url(Version.v1)}marketdata/hours"
 
     @classmethod
     def market(cls, market):
@@ -86,7 +86,7 @@ class URLS:
     # stocks.py
     @classmethod
     def instruments(cls):
-        return cls.get_base_url(Version.v1) + "instruments"
+        return f"{cls.get_base_url(Version.v1)}instruments"
 
     @classmethod
     def instrument(cls, cusip):
@@ -98,7 +98,7 @@ class URLS:
 
     @classmethod
     def quotes(cls):
-        return cls.get_base_url(Version.v1) + "marketdata/quotes"
+        return f"{cls.get_base_url(Version.v1)}marketdata/quotes"
 
     @classmethod
     def price_history(cls, ticker):
@@ -106,4 +106,4 @@ class URLS:
 
     @classmethod
     def option_chains(cls):
-        return cls.get_base_url(Version.v1) + "marketdata/chains"
+        return f"{cls.get_base_url(Version.v1)}marketdata/chains"

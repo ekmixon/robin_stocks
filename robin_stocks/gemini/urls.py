@@ -8,8 +8,8 @@ from robin_stocks.gemini.helper import get_sandbox_flag
 class AutoName(Enum):
     """Automatically sets an enum value to be its name when using auto()"""
 
-    def _generate_next_value_(name, start, count, last_values):
-        return name
+    def _generate_next_value_(self, start, count, last_values):
+        return self
 
 
 class Version(AutoName):
@@ -29,12 +29,8 @@ class URLS:
 
     @classmethod
     def get_base_url(cls, version):
-        if get_sandbox_flag():
-            url = cls.__base_sandbox_url
-        else:
-            url = cls.__base_url
-
-        return url + "/" + version.value + "/"
+        url = cls.__base_sandbox_url if get_sandbox_flag() else cls.__base_url
+        return f"{url}/{version.value}/"
 
     @classmethod
     def get_endpoint(cls, url):
@@ -50,19 +46,19 @@ class URLS:
     # account.py
     @classmethod
     def account_detail(cls):
-        return cls.get_base_url(Version.v1) + "account"
+        return f"{cls.get_base_url(Version.v1)}account"
 
     @classmethod
     def available_balances(cls):
-        return cls.get_base_url(Version.v1) + "balances"
+        return f"{cls.get_base_url(Version.v1)}balances"
 
     @classmethod
     def notional_balances(cls):
-        return cls.get_base_url(Version.v1) + "notionalbalances/usd"
+        return f"{cls.get_base_url(Version.v1)}notionalbalances/usd"
 
     @classmethod
     def transfers(cls):
-        return cls.get_base_url(Version.v1) + "transfers"
+        return f"{cls.get_base_url(Version.v1)}transfers"
 
     @classmethod
     def deposit_addresses(cls, network):
@@ -79,7 +75,7 @@ class URLS:
     # authentication.py
     @classmethod
     def heartbeat(cls):
-        return cls.get_base_url(Version.v1) + "heartbeat"
+        return f"{cls.get_base_url(Version.v1)}heartbeat"
 
     # crypto.py
     @classmethod
@@ -92,7 +88,7 @@ class URLS:
 
     @classmethod
     def symbols(cls):
-        return cls.get_base_url(Version.v1) + "symbols"
+        return f"{cls.get_base_url(Version.v1)}symbols"
 
     @classmethod
     def symbol_details(cls, ticker):
@@ -100,37 +96,37 @@ class URLS:
 
     @classmethod
     def notional_volume(cls):
-        return cls.get_base_url(Version.v1) + "notionalvolume"
+        return f"{cls.get_base_url(Version.v1)}notionalvolume"
 
     @classmethod
     def trade_volume(cls):
-        return cls.get_base_url(Version.v1) + "tradevolume"
+        return f"{cls.get_base_url(Version.v1)}tradevolume"
 
     # orders.py
     @classmethod
     def mytrades(cls):
-        return cls.get_base_url(Version.v1) + "mytrades"
+        return f"{cls.get_base_url(Version.v1)}mytrades"
 
     @classmethod
     def cancel_session_orders(cls):
-        return cls.get_base_url(Version.v1) + "order/cancel/session"
+        return f"{cls.get_base_url(Version.v1)}order/cancel/session"
 
     @classmethod
     def cancel_order(cls):
-        return cls.get_base_url(Version.v1) + "order/cancel"
+        return f"{cls.get_base_url(Version.v1)}order/cancel"
 
     @classmethod
     def order_status(cls):
-        return cls.get_base_url(Version.v1) + "order/status"
+        return f"{cls.get_base_url(Version.v1)}order/status"
 
     @classmethod
     def active_orders(cls):
-        return cls.get_base_url(Version.v1) + "orders"
+        return f"{cls.get_base_url(Version.v1)}orders"
 
     @classmethod
     def cancel_active_orders(cls):
-        return cls.get_base_url(Version.v1) + "order/cancel/all"
+        return f"{cls.get_base_url(Version.v1)}order/cancel/all"
 
     @classmethod
     def order_new(cls):
-        return cls.get_base_url(Version.v1) + "order/new"
+        return f"{cls.get_base_url(Version.v1)}order/new"

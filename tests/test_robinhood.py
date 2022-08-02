@@ -85,7 +85,7 @@ class TestStocks:
         #
         fake_quotes = r.get_quotes(self.fake_stocks, info=None)
         assert (len(fake_quotes) == 1)
-        assert (fake_quotes[0] == None)
+        assert fake_quotes[0] is None
 
     def test_fundamentals(self):
         quote = r.get_fundamentals(self.single_stock, info=None)
@@ -122,7 +122,7 @@ class TestStocks:
         #
         fake_quotes = r.get_fundamentals(self.fake_stocks, info=None)
         assert (len(fake_quotes) == 1)
-        assert (fake_quotes[0] == None)
+        assert fake_quotes[0] is None
 
     def test_instruments(self):
         quote = r.get_instruments_by_symbols(self.single_stock)
@@ -159,7 +159,7 @@ class TestStocks:
         #
         fake_quotes = r.get_fundamentals(self.fake_stocks, info=None)
         assert (len(fake_quotes) == 1)
-        assert (fake_quotes[0] == None)
+        assert fake_quotes[0] is None
 
     def test_instrument_id(self):
         quote = r.get_instrument_by_url(self.instrument)
@@ -196,7 +196,7 @@ class TestStocks:
         assert (len(more_prices) == len(self.list_stocks))
         fake_prices = r.get_latest_price(self.fake_stocks)
         assert (len(fake_prices) == 1)
-        assert (fake_prices[0] == None)
+        assert fake_prices[0] is None
 
     def test_name_by_symbol(self):
         name = r.get_name_by_symbol(self.single_stock)
@@ -342,7 +342,7 @@ class TestCrypto:
         assert ('symbol' in btc)
         assert ('tradability' in btc)
         fake = [x for x in pairs if x['symbol'] == self.fake]
-        assert (len(fake) == 0)
+        assert not fake
 
     def test_crypto_info(self):
         crypto = r.get_crypto_info(self.bitcoin, info=None)
@@ -358,7 +358,7 @@ class TestCrypto:
         assert ('symbol' in crypto)
         assert ('tradability' in crypto)
         crypto = r.get_crypto_info(self.stock, info=None)
-        assert (crypto == None)
+        assert crypto is None
 
     def test_crypto_quote(self):
         crypto = r.get_crypto_quote(self.bitcoin, info=None)
@@ -372,9 +372,9 @@ class TestCrypto:
         assert ('id' in crypto)
         assert ('volume' in crypto)
         crypto = r.get_crypto_quote(self.stock, info=None)
-        assert (crypto == None)
+        assert crypto is None
         crypto = r.get_crypto_quote(self.fake, info=None)
-        assert (crypto == None)
+        assert crypto is None
 
     def test_crypto_historicals(self):
         crypto = r.get_crypto_historicals(self.bitcoin, 'day', 'week', '24_7', info=None)
